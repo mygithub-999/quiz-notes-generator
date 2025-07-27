@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs/promises');
 const { recognize } = require('tesseract.js');
-const convert = require('pdf-poppler').convert;
+const { PDFImage } = require('pdf-image');
 const os = require('os');
 const crypto = require('crypto');
 
@@ -9,19 +9,18 @@ async function ocrFromPDF(pdfPath) {
   const tempDir = path.join(os.tmpdir(), crypto.randomUUID());
   await fs.mkdir(tempDir, { recursive: true });
 
-  await convert(pdfPath, {
-    format: 'png',
-    out_dir: tempDir,
-    out_prefix: 'page',
-    page: null,
+  const pdfImage = new PDFImage(pdfPath, {
+    outputDirectory: tempDir,
+    convertOptions: {
+      "-density": "300",
+      "-quality": "100"
+    }
   });
 
-  const files = await fs.readdir(tempDir);
-  const imageFiles = files.filter(f => f.endsWith('.png')).sort();
+  const imagePaths = await pdfImage.convertFile(); // returns array of image paths
 
   let text = '';
-  for (const img of imageFiles) {
-    const imagePath = path.join(tempDir, img);
+  for (const imagePath of imagePaths) {
     const { data: { text: ocrText } } = await recognize(imagePath, 'eng');
     text += ocrText + '\n';
   }
