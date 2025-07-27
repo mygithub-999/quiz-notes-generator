@@ -8,7 +8,10 @@ const generateRoutes = require('./routes/generate');
 const app = express();
 const PORT = process.env.PORT ||3001;
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://6886222e702b5044b1421ff8--helpful-taffy-03925b.netlify.app/',
+  methods: ['GET', 'POST'],
+}));
 app.use(bodyParser.json());
 
 // Routes
@@ -21,5 +24,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Backend running at http://localhost:${PORT}`);
+  console.log(`Backend running at http://localhost:${PORT}`);
 });
